@@ -7,8 +7,9 @@ var keymap = {
     "40":"S"
 };
 
-var food = [];
+var food = {};
 
+var width = 3;
 var snake = {
     x: 0,
     y: 0,
@@ -75,9 +76,9 @@ function detectCollision(){
 }
 
 function detectFood() {
-    food_piece = food[0];
-    if( snake.x == food_piece.x && snake.y == food_piece.y ) {
+    if( snake.x >= food.x && snake.x <= food.x+width && snake.y >= food.y && snake.y <= food.y+width) {
         snake.length += 20;
+        generateFood();
     }
 }
 
@@ -104,16 +105,14 @@ function drawGame(){
         var ctx = canvas.getContext('2d');  
 
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        ctx.fillRect(snake.x,snake.y,1,1);  
+        ctx.fillRect(snake.x,snake.y,width,width);  
         for(var i in snake.body) {
             var part = snake.body[i];
-            ctx.fillRect( part.x, part.y, 1, 1);
+            ctx.fillRect( part.x, part.y, width, width);
         }
 
-        food_piece = food[0];
-        
         ctx.fillStyle = "#00A308";
-        ctx.fillRect( food_piece.x, food_piece.y, 1, 1 );
+        ctx.fillRect( food.x, food.y, width, width );
         ctx.fillStyle = "#000000";
     }
 }
@@ -123,12 +122,14 @@ function initPlayer(){
     snake.y = gameArea.height / 2;
 }
 function generateFood(){
-    food_piece = { 
-        x: 25,
-        y: 25
-    };
+    var gameArea = document.getElementById('drawArea');
+    var randomX = Math.floor( Math.random()  * gameArea.width);
+    var randomY = Math.floor( Math.random()  * gameArea.height);
 
-    food.push( food_piece );
+    food = { 
+        x: randomX,
+        y: randomY
+    };
 }
 
 $(document).ready( function() {
