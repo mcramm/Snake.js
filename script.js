@@ -76,7 +76,10 @@ function detectCollision(){
 }
 
 function detectFood() {
-    if( snake.x >= food.x && snake.x <= food.x+width && snake.y >= food.y && snake.y <= food.y+width) {
+    if( (snake.x >= food.x && snake.x <= food.x+width || 
+            snake.x + width >= food.x && snake.x + width <= food.x+width) && 
+        (snake.y >= food.y && snake.y <= food.y+width || 
+            snake.y + width >= food.y && snake.y + width <= food.y+width)) {
         snake.length += 20;
         generateFood();
     }
