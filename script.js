@@ -18,7 +18,8 @@ var food = {};
 
 var counter = 0;
 var fps = 30;
-var width = 3;
+var food_width = 3;
+var snake_width = 3;
 var food_timeout = 1; // minutes
 var snake = {
     x: 0,
@@ -88,10 +89,10 @@ function detectCollision(){
 }
 
 function detectFood() {
-    if( (snake.x >= food.x && snake.x <= food.x+width || 
-            snake.x + width >= food.x && snake.x + width <= food.x+width) && 
-        (snake.y >= food.y && snake.y <= food.y+width || 
-            snake.y + width >= food.y && snake.y + width <= food.y+width)) {
+    if( (snake.x >= food.x && snake.x <= food.x+food_width ||
+            snake.x + snake_width >= food.x && snake.x + snake_width <= food.x+food_width) &&
+        (snake.y >= food.y && snake.y <= food.y+food_width ||
+            snake.y + snake_width >= food.y && snake.y + snake_width <= food.y+food_width)) {
         snake.length += 20;
         snake.score += 20;
         generateFood();
@@ -121,15 +122,15 @@ function drawGame(){
         var ctx = canvas.getContext('2d');  
 
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        ctx.fillRect(snake.x,snake.y,width,width);  
+        ctx.fillRect(snake.x,snake.y,snake_width,snake_width);
         ctx.strokeRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         for(var i in snake.body) {
             var part = snake.body[i];
-            ctx.fillRect( part.x, part.y, width, width);
+            ctx.fillRect( part.x, part.y, snake_width, snake_width);
         }
 
         ctx.fillStyle = "#00A308";
-        ctx.fillRect( food.x, food.y, width, width );
+        ctx.fillRect( food.x, food.y, food_width, food_width );
         ctx.fillStyle = "#000000";
     }
 }
