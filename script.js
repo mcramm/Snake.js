@@ -18,8 +18,8 @@ var food = {};
 
 var counter = 0;
 var fps = 30;
-
 var width = 3;
+var food_timeout = 1; // minutes
 var snake = {
     x: 0,
     y: 0,
@@ -145,7 +145,8 @@ function generateFood(){
 
     food = { 
         x: randomX,
-        y: randomY
+        y: randomY,
+        timeout: (food_timeout * 60 * 1000)
     };
 }
 
@@ -172,10 +173,18 @@ function gameCycle(){
     if( GAME_OVER ){
         return;
     }
+    checkFood();
     calculateScore();
     updateStats();
     drawGame();
     setTimeout(gameCycle, 1000/fps);
+}
+
+function checkFood() {
+    food.timeout -= (1*fps);
+    if( food.timeout <= 0 ){
+        generateFood();
+    }
 }
 
 function updateStats() {
