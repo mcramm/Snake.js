@@ -122,6 +122,7 @@ function drawGame(){
 
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         ctx.fillRect(snake.x,snake.y,width,width);  
+        ctx.strokeRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         for(var i in snake.body) {
             var part = snake.body[i];
             ctx.fillRect( part.x, part.y, width, width);
