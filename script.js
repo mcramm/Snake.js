@@ -7,6 +7,13 @@ var keymap = {
     "40":"S"
 };
 
+var opposing_dir = {
+    "N":"S",
+    "S":"N",
+    "E":"W",
+    "W":"E",
+};
+
 var food = {};
 
 var width = 3;
@@ -22,8 +29,9 @@ var snake = {
 function keyPressed(key) {
     var html = $('#keyContainer').html();
     $('#keyContainer').html(html + " " + key);
-    snake.direction = key;
-
+    if( opposing_dir[snake.direction] != key ) {
+        snake.direction = key;
+    }
 }
 
 function move() {
