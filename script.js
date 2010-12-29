@@ -19,7 +19,7 @@ var opposing_dir = {
 var food = {};
 
 var counter = 0;
-var fps = 30;
+var fps = 50;
 var food_width = 3;
 var snake_width = 3;
 var food_timeout = 1; // minutes
