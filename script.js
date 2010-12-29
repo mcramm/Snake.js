@@ -21,6 +21,8 @@ var fps = 30;
 var food_width = 3;
 var snake_width = 3;
 var food_timeout = 1; // minutes
+var no_generate_buffer = 10; // pixel buffer around edge of arena where no food can be generated
+
 var snake = {
     x: 0,
     y: 0,
@@ -141,8 +143,8 @@ function initPlayer(){
 }
 function generateFood(){
     var gameArea = document.getElementById('drawArea');
-    var randomX = Math.floor( Math.random()  * gameArea.width);
-    var randomY = Math.floor( Math.random()  * gameArea.height);
+    var randomX = Math.floor( Math.random()  * gameArea.width - (no_generate_buffer * 2)) + no_generate_buffer;
+    var randomY = Math.floor( Math.random()  * gameArea.height - (no_generate_buffer * 2)) + no_generate_buffer;
 
     food = { 
         x: randomX,
