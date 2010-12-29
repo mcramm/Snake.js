@@ -1,10 +1,12 @@
 var GAME_OVER = false;
+var PAUSED = false;
 
 var keymap = {
     "37":"W",
     "38":"N",
     "39":"E",
-    "40":"S"
+    "40":"S",
+    "80":"pause"
 };
 
 var opposing_dir = {
@@ -161,25 +163,43 @@ $(document).ready( function() {
     $(document).keydown( function(event) {
         key = keymap[ event.keyCode ];
 
-        if( key == null ) {
-            return;
+        if( key != null ) {
+            if( key == 'pause' ) {
+                if( PAUSED ) {
+                    PAUSED = false;
+                    $('#paused').hide();
+                    $('#underlay').hide();
+                } else {
+                    PAUSED = true;
+                    $('#paused').center();
+                    $('#paused').show();
+                    $('#underlay').show();
+
+                }
+            } else if( !PAUSED && !GAME_OVER ){
+                keyPressed(key);
+            }
         }
 
-        keyPressed(key);
+        return;
     });
     
     gameCycle();
 });
 
 function gameCycle(){
-    move();
     if( GAME_OVER ){
         return;
     }
-    checkFood();
-    calculateScore();
-    updateStats();
-    drawGame();
+
+    if( !PAUSED ) {
+        move();
+        checkFood();
+        calculateScore();
+        updateStats();
+        drawGame();
+    }
+
     setTimeout(gameCycle, 1000/fps);
 }
 
@@ -194,6 +214,7 @@ function updateStats() {
     $('#score').html( snake.score );
     $('#length').html( snake.length );
 }
+
 function calculateScore(){
     counter += 1000/fps;
     if (counter >= 1000 * 10 ) {
@@ -203,4 +224,11 @@ function calculateScore(){
     }
 }
 
+
+jQuery.fn.center = function () {
+    this.css("position","absolute");
+    this.css("top", ( $(window).height() - this.height() ) / 2+$(window).scrollTop() - 100 + "px");
+    this.css("left", ( $(window).width() - this.width() ) / 2+$(window).scrollLeft() + "px");
+    return this;
+}
 
