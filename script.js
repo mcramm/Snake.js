@@ -16,6 +16,9 @@ var opposing_dir = {
 
 var food = {};
 
+var counter = 0;
+var fps = 30;
+
 var width = 3;
 var snake = {
     x: 0,
@@ -23,6 +26,7 @@ var snake = {
     direction: 'N',
     speed: 1,
     length: 10,
+    score: 0,
     body: []
 };
 
@@ -89,6 +93,7 @@ function detectFood() {
         (snake.y >= food.y && snake.y <= food.y+width || 
             snake.y + width >= food.y && snake.y + width <= food.y+width)) {
         snake.length += 20;
+        snake.score += 20;
         generateFood();
     }
 }
@@ -166,8 +171,23 @@ function gameCycle(){
     if( GAME_OVER ){
         return;
     }
+    calculateScore();
+    updateStats();
     drawGame();
-    setTimeout(gameCycle, 1000/30);
+    setTimeout(gameCycle, 1000/fps);
+}
+
+function updateStats() {
+    $('#score').html( snake.score );
+    $('#length').html( snake.length );
+}
+function calculateScore(){
+    counter += 1000/fps;
+    if (counter >= 1000 * 10 ) {
+        snake.score += (2 * snake.length);
+        snake.length += 5;
+        counter = 0;
+    }
 }
 
 
