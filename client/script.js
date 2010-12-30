@@ -9,18 +9,19 @@ var keymap = {
 //    "80":"pause"
 };
 
-var direction = "";
+var direction;
 
 function changeDirection(key) {
     var html = $('#keyContainer').html();
     $('#keyContainer').html(html + " " + key);
     if( direction != key.opposing ) {
         direction = key.direction;
+        snake.setDirection( direction );
     }
-
 }
 
 function keyPressed(event) {
+    console.log('keypressed!!', event.keyCode);
     var key = keymap[ event.keyCode ];
 
     if( key != null ) {
@@ -30,42 +31,14 @@ function keyPressed(event) {
     return;
 }
 
-//function drawGame(){
-//    var canvas = document.getElementById('drawArea');  
-//    if (canvas.getContext){  
-//        var ctx = canvas.getContext('2d');  
-//
-//        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-//        ctx.fillRect(snake.x,snake.y,snake_width,snake_width);
-//        ctx.strokeRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-//        for(var i in snake.body) {
-//            var part = snake.body[i];
-//            ctx.fillRect( part.x, part.y, snake_width, snake_width);
-//        }
-//
-//        ctx.fillStyle = "#00A308";
-//        ctx.fillRect( food.x, food.y, food_width, food_width );
-//        ctx.fillStyle = "#000000";
-//    }
-//}
-
 $(document).ready( function() {
-
-    $(document).keydown( keyPressed(event) );
-//    drawGame();
+    $(document).keydown( function() {
+        var key = keymap[ event.keyCode ];
+        if( key != null ) {
+            changeDirection(key);
+        }
+    });
 });
-
-botclient.onState(function(stateInfo) {
-    if( direction = "" ) {
-        return;
-    }
-
-    return {
-        action: 'move'
-        value: direction;
-    };
-});
-
 
 //function updateStats() {
 //    $('#score').html( snake.score );
@@ -80,12 +53,3 @@ botclient.onState(function(stateInfo) {
 //        counter = 0;
 //    }
 //}
-
-
-//jQuery.fn.center = function () {
-//    this.css("position","absolute");
-//    this.css("top", ( $(window).height() - this.height() ) / 2+$(window).scrollTop() - 100 + "px");
-//    this.css("left", ( $(window).width() - this.width() ) / 2+$(window).scrollLeft() + "px");
-//    return this;
-//}
-
