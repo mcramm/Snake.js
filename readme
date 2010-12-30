@@ -1,0 +1,8 @@
+
+
+
+ Game Tick      Client                                                    Server
+                ------                                                    ------
+    1       (does nothing)  --------> send current direction to node-->  (render all coordinates for food/snakes)
+                                                                            |
+            ( draw )           <---------( send coords to client ) ---------/
