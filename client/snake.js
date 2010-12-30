@@ -1,4 +1,4 @@
-botclient = function() {
+snake = function() {
     var canvas = document.createElement('canvas');
         canvas.setAttribute("width", 600);
         canvas.setAttribute("height", 500);
@@ -48,7 +48,6 @@ botclient = function() {
             case "state":
                 gameClt.refresh(data.value);
                 if (data.value.players[curPlayerId].alive) {
-                    var action = onState(data.value);
                     ws.send(JSON.stringify({command: 'action', value: direction}));
                 }
                 break;
@@ -61,10 +60,15 @@ botclient = function() {
         return curPlayerId;
     };
 
+    var setDirection = function(dir) {
+        direction = dir;
+    }
+
     init();
 
     return {
         getPlayerId: getPlayerId,
+        setDirection: setDirection,
         renderTo: renderTo,
         ready: ready,
         onState: setOnState,

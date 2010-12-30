@@ -16,9 +16,6 @@ server.addListener("connection", function(conn){
   conn.addListener("message", function(msg){
        try{
           var data = JSON.parse(msg);
-          if (data.command === 'ready'){
-              game.state.players[conn.id].username = data.username;
-          }
           if (data.command === 'action') {
               game.responses[conn.id] = data.value;
           }
@@ -44,6 +41,6 @@ server.listen(8000, function() {
         server.broadcast(JSON.stringify(
             game.tick()
         ));
-    }, game.fps);
+    }, 1000/game.fps);
 });
 
