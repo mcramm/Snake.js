@@ -5,11 +5,12 @@ var Game = function() {
     this.responses = {};
     this.state = this.buildState();
     this.game = {};
+    this.impassible = [];
 
     this.width = 600;
     this.height = 500;
 
-    this.colors = ['black', 'red', 'blue', 'orange'];
+    this.colors = ['black', 'red', 'blue', 'orange', 'magenta', 'cyan', 'yellow', 'brown'];
     this.fps = 50;
 
     this.food_timeout = 1; // minutes
@@ -27,20 +28,24 @@ Game.prototype.buildState = function() {
 
 Game.prototype.addPlayer = function(conn) {
     this.state.player_count += 1;
-    if( this.state.player_count > 4 ) {
+    if( this.state.player_count > 8 ) {
         console.log('Max number of players reached, need to restart server');
     }
     var x, y, direction;
     switch( this.state.player_count ) {
+        case 5:
         case 1:
             x = 25; y = 25; direction = "E";
             break;
+        case 6:
         case 2:
             x = 25; y = 475; direction = "N";
             break;
+        case 7:
         case 3:
             x = 475; y = 475; direction = "W";
             break;
+        case 8:
         case 4:
             x = 475; y = 25; direction = "S";
             break;
@@ -99,7 +104,7 @@ Game.prototype.simulate = function(responses, old) {
     }
 
     for ( var i in this.state.players ) {
-        var snake = state.players[i]
+        var snake = state.players[i];
 
         if( !snake.alive ) {
             continue;
@@ -164,16 +169,14 @@ Game.prototype.hitBoundaries = function(snake){
 Game.prototype.hitSnake = function(this_snake){
     collision = false;
     var snakes = this.state.players;
-    for(var i in snakes){
-        var snake = snakes[i];
-        for(var j in snake.body){
-            var part = snake.body[j];
-            if( this_snake.x == part.x && this_snake.y == part.y ){
-                collision = true;
-                break;
-            }
+    for(var i in this.impassible) {
+        var block = this.impassible[i];
+        if( this_snake.x == block.x && this_snake.y == block.y ){
+            collision = true;
+            break;
         }
     }
+
     return collision;
 }
 
@@ -211,9 +214,14 @@ Game.prototype.moveSnake = function(id, x, y) {
     snake.y += y;
 
     var body_length = snake.body.push( new_body_part );
+    this.impassible.push( new_body_part );
 
     if( body_length > snake.max_length ) {
         old_body_part = snake.body.shift();
+        var index = this.impassible.indexOf(old_body_part);
+        if( index != -1 ){
+            this.impassible.splice( index, 1 );
+        }
     }
 
     this.state.players[id] = snake;

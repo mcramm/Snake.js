@@ -24,11 +24,11 @@ snake = function() {
     };
 
     var init = function() {
-//        var jsIncl = document.createElement('script');
-//        jsIncl.setAttribute("type", "text/javascript");
-//        jsIncl.setAttribute("src", "client.js");
-//        document.head.appendChild(jsIncl);
-        gameClt = client(canvas);
+        var jsIncl = document.createElement('script');
+        jsIncl.setAttribute("type", "text/javascript");
+        jsIncl.setAttribute("src", "client.js");
+        document.head.appendChild(jsIncl);
+
     };
 
     var ready = function() {
