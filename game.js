@@ -17,7 +17,6 @@ var Game = function() {
 
     this.snake_width = 3;
 
-    this.counter = 0;
     this.no_generate_buffer = 10; // pixel buffer around edge of arena where no food can be generated
 }
 
@@ -30,7 +29,6 @@ Game.prototype.addPlayer = function(conn) {
     this.state.player_count += 1;
     if( this.state.player_count > 4 ) {
         console.log('Max number of players reached, need to restart server');
-        return;
     }
     var x, y, direction;
     switch( this.state.player_count ) {
@@ -65,6 +63,28 @@ Game.prototype.addPlayer = function(conn) {
     }
 }
 
+Game.prototype.checkDeadCount = function() {
+    var dead_count = 0;
+    var snake;
+    for ( var i in this.state.players ){
+        snake = this.state.players[i];
+        if( !snake.alive ){
+            dead_count += 1;
+        } else {
+            break;
+        }
+    }
+
+    if( dead_count >= 4 ){
+        this.reset();
+    }
+}
+Game.prototype.reset = function() {
+    this.responses = {};
+    this.state = this.buildState();
+    this.game = {};
+}
+
 Game.prototype.simulate = function(responses, old) {
     var state = JSON.parse(JSON.stringify(old));
 
@@ -75,7 +95,7 @@ Game.prototype.simulate = function(responses, old) {
             if( direction ){
                 this.handleMove(i, direction);
             }
-        }
+        } 
     }
 
     for ( var i in this.state.players ) {
@@ -217,6 +237,7 @@ Game.prototype.onTurn = function() {
 }
 Game.prototype.tick = function() {
     this.onTurn();
+    this.checkDeadCount();
     this.responses = {};
     return {command: 'state', value: this.state};
 }
