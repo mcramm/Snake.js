@@ -10,7 +10,7 @@ var Game = function() {
     this.width = 600;
     this.height = 500;
 
-    this.colors = ['black', 'red', 'blue', 'orange'];
+    this.colors = ['black', 'red', 'blue', 'orange', 'magenta', 'cyan', 'yellow', 'brown'];
     this.fps = 50;
 
     this.food_timeout = 1; // minutes
@@ -29,21 +29,25 @@ Game.prototype.buildState = function() {
 
 Game.prototype.addPlayer = function(conn) {
     this.state.player_count += 1;
-    if( this.state.player_count > 4 ) {
+    if( this.state.player_count > 8 ) {
         console.log('Max number of players reached, need to restart server');
         return;
     }
     var x, y, direction;
     switch( this.state.player_count ) {
+        case 5:
         case 1:
             x = 25; y = 25; direction = "E";
             break;
+        case 6:
         case 2:
             x = 25; y = 475; direction = "N";
             break;
+        case 7:
         case 3:
             x = 475; y = 475; direction = "W";
             break;
+        case 8:
         case 4:
             x = 475; y = 25; direction = "S";
             break;
