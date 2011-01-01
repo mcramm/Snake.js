@@ -25,7 +25,7 @@ client = function(canvas) {
         if( snake.color != "" ) {
             ctx.fillStyle = snake.color;
         }
-        ctx.fillRect(snake.x,snake.y,snake_width,snake_width);
+        ctx.fillRect(snake.head.x,snake.head.y,snake_width,snake_width);
 
         for(var i in snake.body) {
             var part = snake.body[i];

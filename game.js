@@ -1,6 +1,8 @@
 var GAME_OVER = false;
 var PAUSED = false;
 
+var Snake = require('./snake').Snake;
+
 var Game = function() {
     this.responses = {};
     this.state = this.buildState();
@@ -11,6 +13,12 @@ var Game = function() {
     this.height = 500;
 
     this.colors = ['black', 'red', 'blue', 'orange', 'magenta', 'cyan', 'yellow', 'brown'];
+    this.startAttributes = [
+        { x: 25, y: 25, direction: "E" },
+        { x: 25, y: 475, direction: "N" },
+        { x: 475, y: 475, direction: "W" },
+        { x: 475, y: 25, direction: "S" }
+    ];
     this.fps = 50;
 
     this.food_timeout = 1; // minutes
@@ -22,68 +30,75 @@ var Game = function() {
 }
 
 Game.prototype.buildState = function() {
-    var newState = {players: {}, food: {}, player_count: 0};
+    var newState = {players: {}, food: {}, player_count: 0, dead_count: 0};
     return newState;
 }
 
 Game.prototype.addPlayer = function(conn) {
     this.state.player_count += 1;
-    if( this.state.player_count > 8 ) {
-        console.log('Max number of players reached, need to restart server');
+    if( this.allPlayersDead() ) {
+        return;
     }
-    var x, y, direction;
-    switch( this.state.player_count ) {
-        case 5:
-        case 1:
-            x = 25; y = 25; direction = "E";
-            break;
-        case 6:
-        case 2:
-            x = 25; y = 475; direction = "N";
-            break;
-        case 7:
-        case 3:
-            x = 475; y = 475; direction = "W";
-            break;
-        case 8:
-        case 4:
-            x = 475; y = 25; direction = "S";
-            break;
+    var color = this.colors[this.state.player_count - 1];
+
+    var index = this.state.player_count;
+    if( index > 4 ) {
+        index -= 4;
     }
-    var snake = {
-        x: x,
-        y: y,
-        direction: direction,
+
+    index--;
+    var starting_attr = this.startAttributes[index];
+
+    var snake = new Snake();
+    snake.create({
+        id: conn.id,
+        direction: starting_attr.direction,
         max_length: 10,
         score: 0,
-        color: this.colors[ this.state.player_count - 1 ],
+        color: color,
         alive: true,
-        kills: 0,
-        body: []
-    };
+        kills: 0
+    });
+    snake.head.x = starting_attr.x;
+    snake.head.y = starting_attr.y;
+
+    for( var i = 0; i < snake.max_length; i++ ){
+        this.moveSnake( snake );
+    }
 
     this.state.players[conn.id] = snake;
-    for(var i = 0; i < snake.max_length; i++){
-        this.handleMove(conn.id, snake.direction);
+}
+
+Game.prototype.removePlayer = function(conn) {
+    var snake = this.state.players[conn.id];
+    if( snake ) {
+        this.state.dead_count += 1;
+        this.state.players[conn.id].alive = false;
     }
 }
 
-Game.prototype.checkDeadCount = function() {
-    var dead_count = 0;
-    var snake;
-    for ( var i in this.state.players ){
-        snake = this.state.players[i];
-        if( !snake.alive ){
-            dead_count += 1;
-        } else {
-            break;
+Game.prototype.allPlayersDead = function() {
+    if( this.state.player_count > 8 ) {
+        console.log("Max number of players reached, will restart server when everyone is dead (current is " + this.state.dead_count+ ")");
+        if( this.state.dead_count >= 8 ) {
+            this.reset();
+            this.state.player_count = 0;
         }
-    }
-
-    if( dead_count >= 4 ){
-        this.reset();
+        return true;
+    } else {
+        return false;
     }
 }
+
+Game.prototype.moveSnake = function(snake, direction) {
+    if( direction == null ){
+        direction = snake.direction;
+    }
+    snake.setDirection( direction );
+    var body_parts = snake.move();
+    this.addImpassible( body_parts );
+}
+
 Game.prototype.reset = function() {
     this.responses = {};
     this.state = this.buildState();
@@ -95,48 +110,98 @@ Game.prototype.simulate = function(responses, old) {
 
     for ( var i in responses ){
         var direction = responses[i];
-        var snake = state.players[i];
-        if( snake.alive ) {
-            if( direction ){
-                this.handleMove(i, direction);
-            }
-        } 
-    }
-
-    for ( var i in this.state.players ) {
-        var snake = state.players[i];
-
+        var snake = this.state.players[i];
         if( !snake.alive ) {
             continue;
         }
-
+        if( direction ){
+            this.moveSnake( snake, direction );
+        }
         if( this.state.food !== null ){
-            this.detectFood(i);
+            this.detectFood(snake);
         }
 
 
-        this.detectCollision(i);
+        this.detectCollision(snake);
     }
 
-
-
     if( this.state.food.x == null ) {
-        this.generateFood();
+        this.generateFood(snake);
     } else {
         this.tickFood();
     }
 
 }
 
-Game.prototype.detectFood = function(id) {
-    var snake = this.state.players[id];
-    if( (snake.x >= this.state.food.x && snake.x <= this.state.food.x+this.food_width ||
-            snake.x + this.snake_width >= this.state.food.x && snake.x + this.snake_width <= this.state.food.x+this.food_width) &&
-        (snake.y >= this.state.food.y && snake.y <= this.state.food.y+this.food_width ||
-            snake.y + this.snake_width >= this.state.food.y && snake.y + this.snake_width <= this.state.food.y+this.food_width)) {
-        snake.max_length += 20;
-        snake.score += 20;
+Game.prototype.addImpassible = function(body_parts) {
+    this.impassible.push( body_parts.new_part );
 
+    if( body_parts.old_part != null ){
+        var index = this.impassible.indexOf(body_parts.old_part);
+        this.impassible.splice( index, 1 );
+    }
+}
+
+Game.prototype.detectCollision = function(snake){
+    var x = snake.head.x;
+    var y = snake.head.y;
+
+    if ( this.hitBoundaries(x, y) || this.hitSnake(x, y) ){
+        console.log('Player ' + snake.id + ' has died!');
+        this.state.dead_count += 1;
+        snake.alive = false;
+    }
+}
+
+Game.prototype.printImpassible = function() {
+        var str = "";
+        for(var i in this.impassible ) {
+            var b = this.impassible[i];
+
+            str += "block at {x:" + b.x + ", y:" +b.y+ "}";
+        }
+        console.log(str);
+}
+
+Game.prototype.hitBoundaries = function(x, y){
+    return ( x <= 0 || y <= 0 || x >= this.width || y >= this.height )
+}
+
+Game.prototype.hitSnake = function(x, y){
+    collision = false;
+
+    for(var i in this.impassible) {
+        var block = this.impassible[i];
+        if( x == block.x && y == block.y ){
+            collision = true;
+            break;
+        }
+    }
+
+    return collision;
+}
+
+Game.prototype.checkCoord = function( coord_start, coord_end, target_start, target_end ) {
+    var check_start = (coord_start >= target_start && coord_start <= target_end);
+    var check_end = (coord_end >= target_start && coord_end <= target_end);
+
+    return ( check_start || check_end );
+}
+
+Game.prototype.detectFood = function(snake) {
+    var x = snake.head.x;
+    var y = snake.head.y;
+
+    var sw = this.snake_width;
+    var fx = this.state.food.x;
+    var fy = this.state.food.y;
+    var fw = this.food_width;
+
+    var x_collision = this.checkCoord( x, x+sw, fx, fx+fw);
+    var y_collision = this.checkCoord( y, y+sw, fy, fy+fw);
+
+    if( x_collision && y_collision ) {
+        snake.eatFood();
         this.state.food = {};
     }
 }
@@ -152,81 +217,6 @@ Game.prototype.generateFood = function(id) {
     };
 }
 
-Game.prototype.detectCollision = function(id){
-    var snake = this.state.players[id];
-
-    if ( this.hitBoundaries(snake) || this.hitSnake(snake) ){
-        console.log('Player ' + id + ' has died!');
-//        GAME_OVER = true;
-        this.state.players[id].alive = false;
-    }
-}
-
-Game.prototype.hitBoundaries = function(snake){
-    return ( snake.x <= 0 || snake.y <= 0 || snake.x >= this.width || snake.y >= this.height )
-}
-
-Game.prototype.hitSnake = function(this_snake){
-    collision = false;
-    var snakes = this.state.players;
-    for(var i in this.impassible) {
-        var block = this.impassible[i];
-        if( this_snake.x == block.x && this_snake.y == block.y ){
-            collision = true;
-            break;
-        }
-    }
-
-    return collision;
-}
-
-
-Game.prototype.handleMove = function(snake_id, direction) {
-    var x, y;
-    switch( direction ){
-        case 'N':
-            x = 0, y = -1; 
-            break;
-        case 'E':
-            x = 1, y = 0; 
-            break;
-        case 'S':
-            x = 0, y = 1; 
-            break;
-        case 'W':
-            x = -1, y = 0; 
-            break;
-        default:
-            break;
-    }
-    this.moveSnake(snake_id, x, y);
-
-}
-
-Game.prototype.moveSnake = function(id, x, y) {
-    var snake = this.state.players[id];
-
-    var new_body_part = {
-        x: snake.x,
-        y: snake.y
-    };
-    snake.x += x;
-    snake.y += y;
-
-    var body_length = snake.body.push( new_body_part );
-    this.impassible.push( new_body_part );
-
-    if( body_length > snake.max_length ) {
-        old_body_part = snake.body.shift();
-        var index = this.impassible.indexOf(old_body_part);
-        if( index != -1 ){
-            this.impassible.splice( index, 1 );
-        }
-    }
-
-    this.state.players[id] = snake;
-}
-
 Game.prototype.tickFood = function() {
     this.state.food.timeout -= this.fps;
     if( this.state.food.timeout <= 0 ){
@@ -234,21 +224,15 @@ Game.prototype.tickFood = function() {
     }
 }
 
-Game.prototype.removePlayer = function(conn) {                                                                                                  
-    var player = this.state.players[conn.id];
-    if( player ) {
-        this.state.players[conn.id].alive = false;                                                                                                  
-    }
-}   
 Game.prototype.onTurn = function() {
     this.simulate(this.responses, this.state);
 }
+
 Game.prototype.tick = function() {
     this.onTurn();
-    this.checkDeadCount();
+    this.allPlayersDead();
     this.responses = {};
     return {command: 'state', value: this.state};
 }
-
 
 exports.Game = Game;
