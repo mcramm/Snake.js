@@ -14,7 +14,7 @@ var Snake = function() {
 Snake.prototype.create = function( params ){
     for( var attr in params ) {
         var value = params[attr];
-        if( attr == 'color' || attr == 'direction' ){
+        if( attr == 'username' || attr == 'color' || attr == 'direction' ){
             var value = "'" + value + "'";
         }
         eval("this." + attr + " = " + value + ";");
@@ -30,6 +30,7 @@ Snake.prototype.move = function() {
     var vector = this.getVector();
 
     var new_body_part = {
+        id: this.id,
         x: this.head.x,
         y: this.head.y
     };

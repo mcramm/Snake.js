@@ -10,7 +10,6 @@ var server = ws.createServer({debug: false});
 
 // Handle WebSocket Requests
 server.addListener("connection", function(conn){
-  game.addPlayer(conn);
   conn.send(JSON.stringify({command:'id', value:conn.id, field: {x:100, y:100}}));
 
   conn.addListener("message", function(msg){
@@ -18,6 +17,9 @@ server.addListener("connection", function(conn){
           var data = JSON.parse(msg);
           if (data.command === 'action') {
               game.responses[conn.id] = data.value;
+          }
+          if (data.command === 'username') {
+              game.addPlayer(conn, data.value);
           }
        } catch(e) {
            console.warn(e + 'dropping command for ' + conn.id + ' command: ' + msg);

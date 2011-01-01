@@ -22,12 +22,32 @@ body {
     border: 1px solid gray;
 }
 
-.paused {
+.login-dialog {
     position: absolute;
-    font-style: italic;
-    font-weight: bold;
     z-index: 101;
+    border: 1px solid black;
+    border-radius: 15px;
+    padding: 25px;
+    background-color: white;
 }
+    .button-wrap{
+        padding: 15px 4px 0px;
+        text-align: center;
+    }
+    .play-button, .watch-button {
+        display: inline-block;
+    }
+    .play-button:hover, .watch-button:hover {
+        cursor: pointer;
+        font-weight:bold;
+    }
+    .watch-button{
+        padding-right: 10px;
+    }
+    .play-button{
+        padding-left: 20px;
+        border-left: 1px solid #999;
+    }
 
 .underlay {
     position: absolute;
@@ -39,3 +59,18 @@ body {
     background-color: #000000;
     opacity: 0.1;
 }
+
+.stats {
+
+}
+    .stats .players-wrap {
+    }
+        .stats .players-wrap .label {
+            margin-left: 10px;
+        }
+        .stats .players-wrap .color {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            margin: 0px 5px;
+        }

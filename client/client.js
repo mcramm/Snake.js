@@ -1,6 +1,5 @@
 client = function(canvas) {
     var ctx = null;
-    var curPlayerId = null;
     var serverName = "localhost:8000";
     var userName = "something";
 
@@ -53,14 +52,12 @@ client = function(canvas) {
             var snake = state.players[i];
 
             drawSnake(snake);
+            updateScores(snake);
         };
 
         drawFood(state.food);
     };
 
-    var setCurrentPlayerId = function(id) {
-        curPlayerId = id;
-    };
 
     var getServerName = function() {
         return serverName;
@@ -70,12 +67,33 @@ client = function(canvas) {
         return userName;
     };
 
+    var updateScores = function(snake) {
+        var playerNode = $('#' + snake.id);
+        console.log(playerNode.length);
+        if( playerNode.length == 0 ){
+            $('#players-wrap').append("<div id='" + snake.id + "' class='player'>" +
+                "<span id='name' class='name'>" + snake.username + " - </span>" +
+                "<span class='label'>score:</span><span id='score' class='score'>" + snake.score + "</span>" +
+                "<span class='label'>kills:</span><span id='kills' class='kills'>" + snake.kills + "</span>" +
+                "<span class='label'>length:</span><span id='length' class='length'>" + snake.max_length + "</span>" +
+                "<span class='label'></span><span id='color' class='color' style='background-color: " + snake.color + "'></span>" +
+            "</div>");
+        } else {
+            if( !snake.alive ) {
+                return;
+            }
+            console.log(playerNode.children());
+            playerNode.children("#score").html( snake.score );
+            playerNode.children("#kills").html( snake.kills );
+            playerNode.children("#length").html( snake.max_length );
+        }
+    };
+
     init();
 
     return {
         refresh: refreshScreen,
         getServerName: getServerName,
-        getUsername: getUserName,
-        setCurrentPlayerId: setCurrentPlayerId
+        getUsername: getUserName
     };
 };
