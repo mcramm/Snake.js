@@ -47,7 +47,7 @@ snake = function() {
                 break;
             case "state":
                 gameClt.refresh(data.value);
-                if (data.value.players[curPlayerId].alive) {
+                if (data.value.players[curPlayerId] && data.value.players[curPlayerId].alive) {
                     ws.send(JSON.stringify({command: 'action', value: direction}));
                 }
                 break;
