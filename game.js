@@ -12,7 +12,7 @@ var Game = function() {
     this.width = 600;
     this.height = 500;
 
-    this.colors = ['black', 'red', 'blue', 'orange', 'magenta', 'cyan', 'yellow', 'brown'];
+    this.colors = ['black', 'red', 'blue', 'orange', 'magenta', 'cyan', 'olive', 'brown'];
     this.startAttributes = [
         { x: 25, y: 25, direction: "E" },
         { x: 25, y: 475, direction: "N" },
@@ -34,7 +34,7 @@ Game.prototype.buildState = function() {
     return newState;
 }
 
-Game.prototype.addPlayer = function(conn) {
+Game.prototype.addPlayer = function(conn, username) {
     this.state.player_count += 1;
     if( this.allPlayersDead() ) {
         return;
@@ -52,6 +52,7 @@ Game.prototype.addPlayer = function(conn) {
     var snake = new Snake();
     snake.create({
         id: conn.id,
+        username: username,
         direction: starting_attr.direction,
         max_length: 10,
         score: 0,
@@ -147,7 +148,7 @@ Game.prototype.detectCollision = function(snake){
     var y = snake.head.y;
 
     if ( this.hitBoundaries(x, y) || this.hitSnake(x, y) ){
-        console.log('Player ' + snake.id + ' has died!');
+        console.log('Player ' + snake.username + ' has died!');
         this.state.dead_count += 1;
         snake.alive = false;
     }
@@ -173,6 +174,7 @@ Game.prototype.hitSnake = function(x, y){
     for(var i in this.impassible) {
         var block = this.impassible[i];
         if( x == block.x && y == block.y ){
+            this.state.players[block.id].kills += 1;
             collision = true;
             break;
         }
